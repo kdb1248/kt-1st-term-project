@@ -95,13 +95,11 @@ export default {
         if (err.response) {
           const { status } = err.response;
           if (status === 400) {
-            this.errorMessage =
-              "요청 파라미터가 누락되었거나 형식이 올바르지 않습니다.";
+            this.errorMessage = err.response.data.msg;
           } else if (status === 404) {
-            this.errorMessage =
-              "입력하신 레스토랑 이름 또는 테이블 정보가 올바르지 않습니다.";
+            this.errorMessage = err.response.data.msg;
           } else {
-            this.errorMessage = "서버 내부 문제로 요청을 처리할 수 없습니다.";
+            this.errorMessage = err.response.data.msg;
           }
         } else {
           this.errorMessage = "네트워크 오류가 발생했습니다.";
