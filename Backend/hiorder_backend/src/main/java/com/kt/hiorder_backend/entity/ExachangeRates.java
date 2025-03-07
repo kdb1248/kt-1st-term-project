@@ -1,5 +1,6 @@
 package com.kt.hiorder_backend.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -35,7 +36,7 @@ public class ExachangeRates {
     private String targetCurrency;
 
     @Column(name = "rate", nullable = false, precision = 10, scale = 2)
-    private Double rate; // or BigDecimal
+    private BigDecimal rate; // or BigDecimal
 
     @Column(name = "effective_date", nullable = false)
     private LocalDate effectiveDate;
