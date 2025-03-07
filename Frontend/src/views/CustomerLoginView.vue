@@ -84,8 +84,18 @@ export default {
         // 백엔드 응답 형식 가정: { status: 200, success: true, restaurantId: ..., tableId: ... }
         if (response.data.success) {
           this.successMessage = "로그인 성공!";
-          console.log("restaurantId:", response.data.restaurantId);
-          console.log("tableId:", response.data.tableId);
+          const rId = response.data.restaurantId;
+          const tId = response.data.tableId;
+          
+          // (1) 라우터로 이동 (방식2)
+          // /restaurants/:restaurantId/tables/:tableId
+          this.$router.push({
+            name: "RestaurantMenuView",
+            params: {
+              restaurantId: rId,
+              tableId: tId
+            }
+          });
           // TODO: 라우터로 이동하거나, Vuex/Pinia에 식당/테이블ID 저장, etc.
         } else {
           this.errorMessage = "로그인 실패.";
