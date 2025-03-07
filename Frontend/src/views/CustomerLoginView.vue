@@ -33,7 +33,7 @@
       </div>
 
       <!-- 로그인 버튼 -->
-      <button class="btn btn-primary w-100" @click="login">로그인</button>
+      <button class="btn btn-dark w-100" @click="login">로그인</button>
 
       <!-- 에러 메시지 / 성공 메시지 -->
       <div v-if="errorMessage" class="alert alert-danger mt-3" role="alert">
