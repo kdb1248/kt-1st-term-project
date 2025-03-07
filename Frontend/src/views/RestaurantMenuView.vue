@@ -12,61 +12,58 @@
         </button>
       </div>
     </div>
-<!-- 카테고리 탭 -->
-<div class="category-tabs">
-  <div class="tabs-container">
-    <button 
-      v-for="cat in categories" 
-      :key="cat.menuCategoryId"
-      class="tab-button"
-      :class="{ active: cat.menuCategoryId === selectedCategoryId }"
-      @click="selectCategory(cat.menuCategoryId)"
-    >
-      {{ cat.categoryName }}
-    </button>
-  </div>
-</div>
 
-<!-- 현재 선택된 카테고리 표시 -->
-<div class="selected-category" v-if="selectedCategory">
-  {{ selectedCategory.categoryName }}
-</div>
-
-<!-- 메뉴 목록 -->
-<div class="menu-list">
-  <div class="menu-item" v-for="menu in menus" :key="menu.menuId">
-    <div class="menu-content">
-      <div class="menu-details">
-        <h4 class="menu-name">{{ menu.menuName }}</h4>
-        <p class="menu-description">{{ menu.menuDescription }}</p>
-        <p class="menu-price">{{ menu.price }}원</p>
-      </div>
-      <div class="menu-image">
-        <img
-          v-if="menu.menuImageUrl"
-          :src="menu.menuImageUrl"
-          alt="메뉴이미지"
-        />
+    <!-- 카테고리 탭 -->
+    <div class="category-tabs">
+      <div class="tabs-container">
+        <button
+          v-for="cat in categories"
+          :key="cat.menuCategoryId"
+          class="tab-button"
+          :class="{ active: cat.menuCategoryId === selectedCategoryId }"
+          @click="selectCategory(cat.menuCategoryId)"
+        >
+          {{ cat.categoryName }}
+        </button>
       </div>
     </div>
-    <div class="menu-actions">
-      <button class="add-button">담기</button>
+
+    <!-- 현재 선택된 카테고리 표시 -->
+    <div class="selected-category" v-if="selectedCategory">
+      {{ selectedCategory.categoryName }}
+    </div>
+
+    <!-- 메뉴 목록 -->
+    <div class="menu-list">
+      <div class="menu-item" v-for="menu in menus" :key="menu.menuId">
+        <div class="menu-content">
+          <div class="menu-details">
+            <h4 class="menu-name">{{ menu.menuName }}</h4>
+            <p class="menu-description">{{ menu.menuDescription }}</p>
+            <p class="menu-price">{{ menu.price }}원</p>
+          </div>
+          <div class="menu-image">
+            <img v-if="menu.menuImageUrl" :src="menu.menuImageUrl" alt="메뉴이미지" />
+          </div>
+        </div>
+        <div class="menu-actions">
+          <button class="add-button" @click="addToCart(menu)">담기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 장바구니 버튼 -->
+    <div class="cart-button-container">
+      <button class="cart-button" @click="goToCart">
+        주문하기 ({{ cartCount }}) <i class="fas fa-shopping-cart"></i>
+      </button>
+    </div>
+
+    <!-- 에러 메시지 -->
+    <div v-if="errorMessage" class="error-message">
+      {{ errorMessage }}
     </div>
   </div>
-</div>
-
-<!-- 장바구니 버튼 -->
-<div class="cart-button-container">
-  <button class="cart-button">
-    주문하기 <i class="fas fa-shopping-cart"></i>
-  </button>
-</div>
-
-<!-- 에러 메시지 -->
-<div v-if="errorMessage" class="error-message">
-  {{ errorMessage }}
-</div>
- </div>
 </template>
 
 <script>
@@ -82,19 +79,24 @@ export default {
       menus: [],
       selectedCategoryId: null,
       errorMessage: "",
+      cart: [], // 장바구니 배열: [{ menuId, menuName, price, quantity }, ...]
     };
   },
   computed: {
     selectedCategory() {
-      return this.categories.find(cat => cat.menuCategoryId === this.selectedCategoryId);
-    }
+      return this.categories.find(
+        (cat) => cat.menuCategoryId === this.selectedCategoryId
+      );
+    },
+    // 장바구니 총 수량 (cartCount)
+    cartCount() {
+      return this.cart.reduce((sum, item) => sum + item.quantity, 0);
+    },
   },
   async mounted() {
-    // (1) Path Param에서 restaurantId, tableId 가져오기
     const { restaurantId, tableId } = this.$route.params;
-
     try {
-      // 1) restaurantInfo API
+      // restaurantInfo
       const infoRes = await axios.get(
         `http://localhost:8080/restaurants/${restaurantId}/tables/${tableId}`
       );
@@ -102,12 +104,11 @@ export default {
         this.restaurantName = infoRes.data.restaurantName;
         this.tableName = infoRes.data.tableName;
       } else {
-        // 서버가 { success:false, msg:... } 형태로 내려줄 수도 있음
         this.errorMessage = infoRes.data.message || "식당정보 조회 실패.";
         return;
       }
 
-      // 2) restaurantCategoryInfo API (sort=displayOrder)
+      // restaurantCategoryInfo
       const catRes = await axios.get(
         `http://localhost:8080/restaurants/${restaurantId}/categories?sort=displayOrder`
       );
@@ -118,10 +119,16 @@ export default {
         return;
       }
 
-      // 초기 카테고리 선택 (첫 번째)
+      // 초기 카테고리
       if (this.categories.length > 0) {
         this.selectedCategoryId = this.categories[0].menuCategoryId;
         await this.fetchMenus(this.selectedCategoryId);
+      }
+
+      // localStorage에 저장된 cart 있으면 불러오기 (새로고침 대비)
+      const savedCart = localStorage.getItem("cart");
+      if (savedCart) {
+        this.cart = JSON.parse(savedCart);
       }
     } catch (err) {
       this.handleError(err);
@@ -135,7 +142,6 @@ export default {
     async fetchMenus(catId) {
       this.errorMessage = "";
       const { restaurantId } = this.$route.params;
-
       try {
         const menuRes = await axios.get(
           `http://localhost:8080/restaurants/${restaurantId}/categories/${catId}/menus?sort=displayOrder`
@@ -149,27 +155,54 @@ export default {
         this.handleError(err);
       }
     },
+    addToCart(menu) {
+      // 장바구니에 같은 menuId가 있으면 수량만 +1
+      const existing = this.cart.find((item) => item.menuId === menu.menuId);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        this.cart.push({
+          menuId: menu.menuId,
+          menuName: menu.menuName,
+          price: menu.price,
+          quantity: 1,
+        });
+      }
+      // localStorage에 저장
+      localStorage.setItem("cart", JSON.stringify(this.cart));
+    },
+    goToCart() {
+      // “주문하기” 버튼 → OrderCartView 이동
+      const { restaurantId, tableId } = this.$route.params;
+      this.$router.push({
+        name: "OrderCartView",
+        params: { restaurantId, tableId },
+      });
+    },
     handleError(err) {
       if (err.response) {
         const status = err.response.status;
-        // 백엔드에서 { status: 400, success: false, msg: "..."} 식으로 내려온다고 가정
         const backendMsg = err.response.data.msg;
         if (status === 400) {
-          this.errorMessage = backendMsg || "요청 파라미터가 누락되었거나 형식이 올바르지 않습니다.";
+          this.errorMessage =
+            backendMsg || "요청 파라미터가 누락되었거나 형식이 올바르지 않습니다.";
         } else if (status === 404) {
-          this.errorMessage = backendMsg || "해당 식당 또는 카테고리를 찾을 수 없습니다.";
+          this.errorMessage =
+            backendMsg || "해당 식당 또는 카테고리를 찾을 수 없습니다.";
         } else if (status === 500) {
-          this.errorMessage = backendMsg || "서버 내부 오류가 발생했습니다.";
+          this.errorMessage =
+            backendMsg || "서버 내부 오류가 발생했습니다.";
         } else {
           this.errorMessage = backendMsg || "알 수 없는 오류가 발생했습니다.";
         }
       } else {
         this.errorMessage = "네트워크 오류가 발생했습니다.";
       }
-    }
-  }
+    },
+  },
 };
 </script>
+
 <style scoped>
 /* 전체 컨테이너 스타일 */
 .menu-container {
@@ -278,18 +311,7 @@ export default {
   background-color: #fff;
 }
 
-/* 메뉴 목록 */
-/* .menu-list {
-  padding: 10px 15px;
-}
 
-.menu-item {
-  background-color: #fff;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-} */
 /* 기존 .menu-list, .menu-item 스타일 중에서 display/width/margin을 조정 */
 
 .menu-list {
@@ -411,4 +433,6 @@ export default {
 .fa-shopping-cart::before {
   content: "🛒";
 }
+
 </style>
+
