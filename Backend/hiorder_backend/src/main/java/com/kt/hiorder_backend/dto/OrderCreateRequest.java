@@ -19,6 +19,7 @@ public class OrderCreateRequest {
         private String menuName;
         private int quantity;
         private BigDecimal itemPrice;
+        private Long menuId;
         // (실무에선 menuId도 받으면 안전)
     }
 }

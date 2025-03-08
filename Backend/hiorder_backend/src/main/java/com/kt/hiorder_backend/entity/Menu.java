@@ -1,5 +1,6 @@
 package com.kt.hiorder_backend.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -37,7 +38,7 @@ public class Menu {
     private String menuDescription;
 
     @Column(name = "price", nullable = false)
-    private Long price;  // numeric(10,0) → long or BigDecimal
+    private BigDecimal price;  // numeric(10,0) → long or BigDecimal
 
     @Column(name = "menu_image_url", columnDefinition = "text")
     private String menuImageUrl;

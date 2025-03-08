@@ -23,6 +23,7 @@ public class OrderCreateResponse {
         private String orderStatus;   // ex) PENDING
         private String orderTable;     // "23번 테이블"
         private Long tableId;         // 23
+        private Integer orderCode;  // <--- 추가
         private Long totalAmount;     // 26000
         private LocalDateTime createdAt;
         private List<OrderItemDto> orderItems;
@@ -32,6 +33,7 @@ public class OrderCreateResponse {
     @Builder
     public static class OrderItemDto {
         private Long orderItemId;
+        private Long menuId;        // 추가
         private String menuName;
         private int quantity;
         private BigDecimal itemPrice;

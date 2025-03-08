@@ -19,9 +19,9 @@ public class OrderCreateController {
 
     @PostMapping("/{restaurantId}/tables/{tableId}/orders")
     public ResponseEntity<?> createOrder(
-            @PathVariable Long restaurantId,
-            @PathVariable Long tableId,
-            @RequestBody OrderCreateRequest request
+        @PathVariable("restaurantId") Long restaurantId,
+        @PathVariable("tableId") Long tableId,
+        @RequestBody OrderCreateRequest request
     ) {
         try {
             OrderCreateResponse response = orderCreateService.createOrder(restaurantId, tableId, request);
