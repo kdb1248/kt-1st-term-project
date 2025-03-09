@@ -6,7 +6,7 @@
     <div class="card p-4" style="max-width: 400px; width: 100%">
       <!-- 상단 로고/타이틀 -->
       <div class="text-center mb-3">
-        <h1 class="h3 mb-1">하이오더</h1>
+        <h1 class="h3 mb-1">하이오더(고객화면)</h1>
         <p class="text-muted mb-0">식당명과 테이블명을 입력하여 로그인하세요</p>
       </div>
 
