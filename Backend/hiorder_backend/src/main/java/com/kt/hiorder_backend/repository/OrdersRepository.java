@@ -3,6 +3,7 @@ package com.kt.hiorder_backend.repository;
 import com.kt.hiorder_backend.entity.Orders;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -26,6 +27,28 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
     int findMaxOrderCodeToday(@Param("restaurantId") Long restaurantId,
                             @Param("today") LocalDate today);
 
+
+    // DESC
+    @Query(value = "SELECT * FROM orders o " +
+           "WHERE o.restaurant_id = :restaurantId " +
+           "  AND o.table_id = :tableId " +
+           "  AND o.order_status = :orderStatus " +
+           "ORDER BY o.order_code DESC",
+           nativeQuery = true)
+    List<Orders> findOrdersByStatusDesc(@Param("restaurantId") Long restaurantId,
+                                        @Param("tableId") Long tableId,
+                                        @Param("orderStatus") String orderStatus);
+
+    // ASC
+    @Query(value = "SELECT * FROM orders o " +
+           "WHERE o.restaurant_id = :restaurantId " +
+           "  AND o.table_id = :tableId " +
+           "  AND o.order_status = :orderStatus " +
+           "ORDER BY o.order_code ASC",
+           nativeQuery = true)
+    List<Orders> findOrdersByStatusAsc(@Param("restaurantId") Long restaurantId,
+                                       @Param("tableId") Long tableId,
+                                       @Param("orderStatus") String orderStatus);
 
 
 
