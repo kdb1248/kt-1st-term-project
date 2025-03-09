@@ -67,16 +67,15 @@
           //    예: { status: 200, success: true, restaurantId: ... }
           if (response.data.success) {
             this.successMessage = "로그인 성공!";
-            console.log("restaurantId:", response.data.restaurantId);
             const rId = response.data.restaurantId;
-            
-  
-            // TODO: 로그인 성공 시 사장님 화면(주문내역 실시간 확인 등)으로 이동
-            // 예: /ownerView/orders?restaurantId=xxx (추가 라우터 설정)
-            // this.$router.push({
-            //   name: "OwnerOrderHistoryView", 
-            //   params: { restaurantId: response.data.restaurantId }
-            // });
+
+            // [CHANGED] also store the actual restaurantName
+            localStorage.setItem("ownerRestaurantName", this.restaurantName);
+            // 로그인 성공 후, 사장님 주문내역 실시간 확인 뷰로 이동
+            this.$router.push({
+                name: "RestaurantOrderHistoryView",
+                params: { restaurantId: rId }
+            });
           } else {
             this.errorMessage = "로그인 실패.";
           }

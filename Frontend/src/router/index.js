@@ -4,6 +4,7 @@ import RestaurantMenuView from '../views/RestaurantMenuView.vue'
 import OrderCartView from '../views/OrderCartView.vue'
 import TableOrderHistoryView from '../views/TableOrderHistoryView.vue'
 import OwnerLoginView from '../views/OwnerLoginView.vue'
+import RestaurantOrderHistoryView from '../views/RestaurantOrderHistoryView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +33,12 @@ const router = createRouter({
       path: "/ownerView/login",
       name: "OwnerLoginView",
       component: OwnerLoginView,
+    },
+    // 사장님 주문내역 실시간 확인
+    {
+      path: "/restaurants/:restaurantId/orders/history",
+      name: "RestaurantOrderHistoryView",
+      component: RestaurantOrderHistoryView
     },
   ],
 })
