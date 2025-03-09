@@ -51,5 +51,23 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
                                        @Param("orderStatus") String orderStatus);
 
 
+    // DESC: 식당 전체 주문 + 특정 상태
+    @Query(value = "SELECT * FROM orders o " +
+           "WHERE o.restaurant_id = :restaurantId " +
+           "  AND o.order_status = :orderStatus " +
+           "ORDER BY o.order_code DESC",
+           nativeQuery = true)
+    List<Orders> findOrdersByRestaurantStatusDesc(@Param("restaurantId") Long restaurantId,
+                                                  @Param("orderStatus") String orderStatus);
+
+    // ASC: 식당 전체 주문 + 특정 상태
+    @Query(value = "SELECT * FROM orders o " +
+           "WHERE o.restaurant_id = :restaurantId " +
+           "  AND o.order_status = :orderStatus " +
+           "ORDER BY o.order_code ASC",
+           nativeQuery = true)
+    List<Orders> findOrdersByRestaurantStatusAsc(@Param("restaurantId") Long restaurantId,
+                                                 @Param("orderStatus") String orderStatus);
+
 
 }
