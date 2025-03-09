@@ -8,7 +8,7 @@
       </div>
       <div class="header-actions">
         <button class="icon-button lang-button">
-          <i class="fas fa-globe"></i> LANG
+          <i class="fas fa-globe"></i> LANGUAGE
         </button>
       </div>
     </div>
@@ -63,6 +63,34 @@
     <div v-if="errorMessage" class="error-message">
       {{ errorMessage }}
     </div>
+    <!-- [CHANGED] Bootstrap Toast for message -->
+    <div
+      class="toast-container position-fixed bottom-0 end-0 p-3"
+      style="z-index: 9999"
+    >
+      <div
+        id="liveToast"
+        class="toast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        :class="{ show: toastVisible }"
+      >
+        <div class="toast-header">
+          <strong class="me-auto">알림</strong>
+          <small class="text-muted"></small>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Close"
+            @click="toastVisible = false"
+          ></button>
+        </div>
+        <div class="toast-body">
+          {{ toastMessage }}
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -80,6 +108,11 @@ export default {
       selectedCategoryId: null,
       errorMessage: "",
       cart: [], // 장바구니 배열: [{ menuId, menuName, price, quantity }, ...]
+      
+      // [CHANGED] Toast states
+      toastVisible: false,
+      toastMessage: "",
+    
     };
   },
   computed: {
@@ -95,6 +128,14 @@ export default {
   },
   async mounted() {
     const { restaurantId, tableId } = this.$route.params;
+    
+    // [CHANGED] Check localStorage for toastMessage
+    const savedToastMsg = localStorage.getItem("toastMessage");
+    if (savedToastMsg) {
+      this.showToast(savedToastMsg);
+      localStorage.removeItem("toastMessage"); // remove to avoid repeated showing
+    }
+    
     try {
       // restaurantInfo
       const infoRes = await axios.get(
@@ -103,6 +144,10 @@ export default {
       if (infoRes.data.success) {
         this.restaurantName = infoRes.data.restaurantName;
         this.tableName = infoRes.data.tableName;
+
+        // [CHANGED] save tableName in localStorage so OrderCartView can use it
+        localStorage.setItem("tableName", this.tableName);
+      
       } else {
         this.errorMessage = infoRes.data.message || "식당정보 조회 실패.";
         return;
@@ -198,6 +243,14 @@ export default {
       } else {
         this.errorMessage = "네트워크 오류가 발생했습니다.";
       }
+    },
+    // [CHANGED] Toast show function
+    showToast(msg) {
+      this.toastMessage = msg;
+      this.toastVisible = true;
+      setTimeout(() => {
+        this.toastVisible = false;
+      }, 3000);
     },
   },
 };
