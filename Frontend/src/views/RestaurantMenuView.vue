@@ -54,6 +54,10 @@
 
     <!-- 장바구니 버튼 -->
     <div class="cart-button-container">
+       <!-- [CHANGED] 주문내역 버튼 (왼쪽) + 주문하기 버튼 (오른쪽) -->
+       <button class="history-button" @click="goToHistory">
+        주문내역 <i class="fa-light fa-receipt"></i>
+      </button>
       <button class="cart-button" @click="goToCart">
         주문하기 ({{ cartCount }}) <i class="fas fa-shopping-cart"></i>
       </button>
@@ -222,6 +226,14 @@ export default {
       this.$router.push({
         name: "OrderCartView",
         params: { restaurantId, tableId },
+      });
+    },
+    // 주문내역 화면으로 이동
+    goToHistory() {
+      const { restaurantId, tableId } = this.$route.params;
+      this.$router.push({
+        name: "TableOrderHistoryView",
+        params: { restaurantId, tableId }
       });
     },
     handleError(err) {
@@ -449,11 +461,24 @@ export default {
   bottom: 20px;
   right: 20px;
   z-index: 100;
+  display: flex;        /* [CHANGED] flex container */
+  gap: 10px;            /* [CHANGED] spacing between buttons */
 }
 
 .cart-button {
   background-color: #00b8a9;
   color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(0, 184, 169, 0.3);
+  cursor: pointer;
+}
+.history-button {
+  background-color: #fff;
+  color: #00b8a9;
   border: none;
   border-radius: 30px;
   padding: 12px 20px;
@@ -486,6 +511,8 @@ export default {
 .fa-shopping-cart::before {
   content: "🛒";
 }
-
+.fa-receipt::before {
+  content: "🧾";
+}
 </style>
 
