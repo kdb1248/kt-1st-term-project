@@ -2,7 +2,7 @@
   <div class="menu-container">
     <!-- 상단 헤더 영역 -->
     <div class="header">
-      <div class="restaurant-info">
+      <div class="restaurant-info" @click="onRestaurantInfoClick">
         <h3>{{ restaurantName }}</h3>
         <p>{{ tableName }}</p>
       </div>
@@ -95,6 +95,17 @@
         </div>
       </div>
     </div>
+    <!-- (2) 로그아웃 모달 -->
+    <div class="modal-overlay" v-if="showLogoutModal">
+      <div class="modal-content">
+        <h3>로그아웃</h3>
+        <p>정말 로그아웃하시겠습니까?</p>
+        <div class="modal-buttons">
+          <button class="btn btn-secondary" @click="cancelLogout">아니오</button>
+          <button class="btn btn-danger" @click="doLogout">로그아웃</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -112,7 +123,11 @@ export default {
       selectedCategoryId: null,
       errorMessage: "",
       cart: [], // 장바구니 배열: [{ menuId, menuName, price, quantity }, ...]
-      
+      // (A) 3번 클릭 감지
+      clickCount: 0,
+      lastClickTime: 0,
+      // (B) 로그아웃 모달
+      showLogoutModal: false,
       // [CHANGED] Toast states
       toastVisible: false,
       toastMessage: "",
@@ -263,6 +278,38 @@ export default {
       setTimeout(() => {
         this.toastVisible = false;
       }, 3000);
+    },
+     // (C) 3번 연속 클릭 감지
+    onRestaurantInfoClick() {
+      const now = Date.now();
+      // 클릭 간격이 500ms 이하라면 카운트 증가, 아니면 리셋
+      if (now - this.lastClickTime < 1000) {
+        this.clickCount++;
+      } else {
+        this.clickCount = 1;
+      }
+      this.lastClickTime = now;
+
+      // 3번 이상 클릭
+      if (this.clickCount >= 3) {
+        this.confirmLogout();
+        // 리셋
+        this.clickCount = 0;
+      }
+    },
+
+    // (D) 로그아웃 모달
+    confirmLogout() {
+      this.showLogoutModal = true;
+    },
+    cancelLogout() {
+      this.showLogoutModal = false;
+    },
+    doLogout() {
+      this.showLogoutModal = false;
+      // 예: localStorage.removeItem("cart");
+      // or clear tableName
+      this.$router.push({ name: "CustomerLoginView" });
     },
   },
 };
@@ -513,6 +560,43 @@ export default {
 }
 .fa-receipt::before {
   content: "🧾";
+}
+/* (E) 로그아웃 모달 */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 320px;
+  max-width: 90%;
+}
+
+.modal-content h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #c0392b;
+}
+
+.modal-content p {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
 }
 </style>
 
