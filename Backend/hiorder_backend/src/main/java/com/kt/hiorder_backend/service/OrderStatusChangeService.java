@@ -72,7 +72,7 @@ public class OrderStatusChangeService {
                 .updatedOrderIds(updatedIds)
                 .build();
 
-        String msg = String.format("해당 테이블의 PENDING 주문 %d건을 PAID로 변경했습니다.", updatedIds.size());
+        String msg = String.format("해당 테이블의 주문 %d건을 결제완료로 변경했습니다.", updatedIds.size());
 
         return OrderStatusChangeResponse.builder()
                 .status(200)
