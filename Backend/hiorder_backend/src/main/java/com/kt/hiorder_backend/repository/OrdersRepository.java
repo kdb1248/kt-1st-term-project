@@ -70,4 +70,14 @@ public interface OrdersRepository extends JpaRepository<Orders, Long> {
                                                  @Param("orderStatus") String orderStatus);
 
 
+    // 특정 테이블의 주문 상태 변경
+    // 특정 식당 + 특정 테이블 + 특정 상태의 주문 목록 조회 (Native Query)
+    @Query(value = "SELECT * FROM orders o " +
+                   "WHERE o.restaurant_id = :restaurantId " +
+                   "  AND o.table_id = :tableId " +
+                   "  AND o.order_status = :orderStatus",
+           nativeQuery = true)
+    List<Orders> findAllByRestaurantAndTableAndStatus(@Param("restaurantId") Long restaurantId,
+                                                      @Param("tableId") Long tableId,
+                                                      @Param("orderStatus") String orderStatus);
 }
