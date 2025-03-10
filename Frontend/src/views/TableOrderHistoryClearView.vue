@@ -3,7 +3,7 @@
       <!-- 상단 헤더 -->
       <div class="history-header">
         <h2>테이블 주문내역 비우기</h2>
-        <button class="close-btn" @click="goBackToLogin">로그아웃</button>
+        <button class="close-btn" @click="confirmLogout">로그아웃</button>
         <div class="restaurant-name-display">
           <span>{{ restaurantName }}</span>
         </div>
@@ -59,6 +59,20 @@
         </div>
       </div>
     </div>
+    <!-- (2) 로그아웃 모달 -->
+    <div class="modal-overlay" v-if="showLogoutModal">
+      <div class="modal-content">
+        <h3>로그아웃</h3>
+        <p>정말 로그아웃하시겠습니까?</p>
+        <div class="modal-buttons">
+          <button class="btn btn-secondary" @click="cancelLogout">아니오</button>
+          <button class="btn btn-danger" @click="doLogout">로그아웃</button>
+        </div>
+      </div>
+    </div>
+
+
+
     <!-- (A) Bootstrap Toast (하단 오른쪽) -->
     <div
       class="toast-container position-fixed bottom-0 end-0 p-3"
@@ -100,6 +114,8 @@ export default {
       errorMessage: "",
       currentTab: "clear", // 현재 탭 표시
       showModal: false, // [CHANGED] 모달 표시 여부
+      // (A) 로그아웃 모달
+      showLogoutModal: false,
       selectedTable: {}, // [CHANGED] 선택한 테이블 정보
        // (B) toast
       toastVisible: false,
@@ -132,7 +148,15 @@ export default {
     }
   },
   methods: {
-    goBackToLogin() {
+     // (B) 로그아웃 모달
+     confirmLogout() {
+      this.showLogoutModal = true;
+    },
+    cancelLogout() {
+      this.showLogoutModal = false;
+    },
+    doLogout() {
+      this.showLogoutModal = false;
       this.$router.push({ name: "OwnerLoginView" });
     },
     goToOrdersTab() {

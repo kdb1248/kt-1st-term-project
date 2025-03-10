@@ -3,7 +3,7 @@
     <!-- 상단 헤더 -->
     <div class="history-header">
       <h2>실시간 주문 내역</h2>
-      <button class="close-btn" @click="goBackToLogin">로그아웃</button>
+      <button class="close-btn" @click="confirmLogout">로그아웃</button>
       <div class="restaurant-name-display">
         <span>{{ restaurantName }}</span>
       </div>
@@ -75,6 +75,18 @@
     <div v-if="errorMessage" class="error-message">
       {{ errorMessage }}
     </div>
+
+    <!-- (2) 로그아웃 모달 -->
+    <div class="modal-overlay" v-if="showLogoutModal">
+      <div class="modal-content">
+        <h3>로그아웃</h3>
+        <p>정말 로그아웃하시겠습니까?</p>
+        <div class="modal-buttons">
+          <button class="btn btn-secondary" @click="cancelLogout">아니오</button>
+          <button class="btn btn-danger" @click="doLogout">로그아웃</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -89,7 +101,9 @@ export default {
       orders: [],
       errorMessage: "",
       intervalId: null, // for setInterval
-      currentTab: "orders" // [CHANGED] 표시용
+      currentTab: "orders", // [CHANGED] 표시용
+      // (A) 로그아웃 모달
+      showLogoutModal: false
     };
   },
   async mounted() {
@@ -137,11 +151,20 @@ export default {
         }
       }
     },
-    goBackToLogin() {
-      // 로그아웃 or 다른 로직
-      // 일단은 사장님 로그인 화면으로 이동
+    // (B) 로그아웃 모달
+    confirmLogout() {
+      this.showLogoutModal = true;
+    },
+    cancelLogout() {
+      this.showLogoutModal = false;
+    },
+    doLogout() {
+      // 실제 로그아웃 로직
+      this.showLogoutModal = false;
+      // 예: localStorage.removeItem("ownerRestaurantName");
       this.$router.push({ name: "OwnerLoginView" });
     },
+
     formatDateTime(dt) {
       if (!dt) return "";
       const dateObj = new Date(dt);
@@ -192,6 +215,42 @@ export default {
   font-weight: 600;
   color: #c0392b; /* [CHANGED] main color for owner screen */
 }
+
+/* 로그아웃 모달 */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 320px;
+  max-width: 90%;
+}
+.modal-content h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #c0392b;
+}
+.modal-content p {
+  margin-bottom: 15px;
+  color: #333;
+}
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+
 .tabs-container {
   display: flex;
   gap: 10px;
