@@ -59,7 +59,34 @@
         </div>
       </div>
     </div>
+    <!-- (A) Bootstrap Toast (하단 오른쪽) -->
+    <div
+      class="toast-container position-fixed bottom-0 end-0 p-3"
+      style="z-index: 9999"
+    >
+      <div
+        id="liveToast"
+        class="toast"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+        :class="{ show: toastVisible }"
+      >
+        <div class="toast-header">
+          <strong class="me-auto">알림</strong>
+          <button
+            type="button"
+            class="btn-close"
+            aria-label="Close"
+            @click="toastVisible = false"
+          ></button>
+        </div>
+        <div class="toast-body">
+          {{ toastMessage }}
+        </div>
+      </div>
     </div>
+</div>
 </template>
 <script>
 import axios from "axios";
@@ -73,7 +100,10 @@ export default {
       errorMessage: "",
       currentTab: "clear", // 현재 탭 표시
       showModal: false, // [CHANGED] 모달 표시 여부
-      selectedTable: {} // [CHANGED] 선택한 테이블 정보
+      selectedTable: {}, // [CHANGED] 선택한 테이블 정보
+       // (B) toast
+      toastVisible: false,
+      toastMessage: "",
     };
   },
   async mounted() {
@@ -123,10 +153,41 @@ export default {
     cancelClear() {
       this.showModal = false; // 모달 닫기
     },
-    doClear() {
-      // TODO: PUT /restaurants/{restaurantId}/tables/{tableId}/orders/changeStatus
-      alert(`정리 API 호출 예정! (tableId=${this.selectedTable.tableId})`);
-      this.showModal = false;
+    async doClear() {
+      // (3) PUT API 호출
+      this.showModal = false; // 모달 닫기
+      const { restaurantId } = this.$route.params;
+
+      try {
+        const response = await axios.put(
+          `http://localhost:8080/restaurants/${restaurantId}/tables/${this.selectedTable.tableId}/orders/changeStatus`
+        );
+        // 성공 응답 예: { status:200, success:true, data:{ updatedCount, updatedOrderIds }, message }
+        if (response.data.success) {
+           // (2) toast 로 메시지 표시
+           this.showToast(response.data.message || "정리 완료!");
+          // (3) updatedCount>0이면 테이블 목록 다시 조회할지 여부는 선택
+          // this.fetchTables(); // etc
+        } else {
+          // success=false
+           this.showToast(response.data.message || "정리 실패!");
+        }
+      } catch (err) {
+        if (err.response) {
+          const backendMsg = err.response.data.msg || err.response.data.message;
+          this.showToast(backendMsg || "서버 오류가 발생했습니다.");
+        } else {
+          this.showToast("네트워크 오류가 발생했습니다.");
+        }
+      }
+    },
+    // (B) toast 로직
+    showToast(msg) {
+      this.toastMessage = msg;
+      this.toastVisible = true;
+      setTimeout(() => {
+        this.toastVisible = false;
+      }, 3000);
     },
   }
 };
@@ -277,5 +338,12 @@ export default {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+}
+.toast-container {
+  pointer-events: none; 
+}
+.toast {
+  pointer-events: auto;
+  /* etc */
 }
 </style>

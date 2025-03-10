@@ -127,7 +127,7 @@ public class OrderCreateService {
                 .status(201)
                 .success(true)
                 .data(data)
-                .message("주문이 성공적으로 생성되었습니다.")
+                .message("주문이 성공적으로 완료되었습니다.")
                 .build();
     }
 }
