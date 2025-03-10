@@ -5,6 +5,7 @@ import OrderCartView from '../views/OrderCartView.vue'
 import TableOrderHistoryView from '../views/TableOrderHistoryView.vue'
 import OwnerLoginView from '../views/OwnerLoginView.vue'
 import RestaurantOrderHistoryView from '../views/RestaurantOrderHistoryView.vue'
+import TableOrderHistoryClearView from '../views/TableOrderHistoryClearView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,6 +41,11 @@ const router = createRouter({
       name: "RestaurantOrderHistoryView",
       component: RestaurantOrderHistoryView
     },
+    {
+      path: "/restaurants/:restaurantId/tables",
+      name: "TableOrderHistoryClearView",
+      component: TableOrderHistoryClearView
+    }
   ],
 })
 
