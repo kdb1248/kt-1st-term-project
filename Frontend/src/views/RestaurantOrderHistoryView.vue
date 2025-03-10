@@ -9,6 +9,23 @@
       </div>
     </div>
 
+    <!-- (A) 탭 영역 -->
+    <div class="tabs-container">
+      <button
+        class="tab-button"
+        :class="{ active: currentTab === 'orders' }"
+        @click="goToOrdersTab"
+      >
+        주문내역
+      </button>
+      <button
+        class="tab-button"
+        :class="{ active: currentTab === 'clear' }"
+        @click="goToClearTab"
+      >
+        테이블 주문내역 비우기
+      </button>
+    </div>
     <!-- 주문 리스트 -->
     <div class="order-list" v-if="orders.length > 0">
       <div
@@ -72,6 +89,7 @@ export default {
       orders: [],
       errorMessage: "",
       intervalId: null, // for setInterval
+      currentTab: "orders" // [CHANGED] 표시용
     };
   },
   async mounted() {
@@ -134,6 +152,18 @@ export default {
       const ss = String(dateObj.getSeconds()).padStart(2, "0");
       return `${MM}:${DD} ${hh}:${mm}:${ss}`;
     },
+     // [CHANGED] 탭 전환
+     goToOrdersTab() {
+      // 현재 화면이므로 do nothing or refresh
+      // but for demonstration, let's just do nothing
+    },
+    goToClearTab() {
+      const { restaurantId } = this.$route.params;
+      this.$router.push({
+        name: "TableOrderHistoryClearView",
+        params: { restaurantId }
+      });
+    },
   },
 };
 </script>
@@ -162,6 +192,28 @@ export default {
   font-weight: 600;
   color: #c0392b; /* [CHANGED] main color for owner screen */
 }
+.tabs-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.tab-button {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: 600;
+  color: #333;
+}
+
+.tab-button.active {
+  background-color: #c0392b; /* 메인색 빨강 */
+  color: #fff;
+  border-color: #c0392b;
+}
+
 
 .close-btn {
   position: absolute;
