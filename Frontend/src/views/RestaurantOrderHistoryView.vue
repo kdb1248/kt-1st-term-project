@@ -25,6 +25,13 @@
       >
         테이블 주문내역 비우기
       </button>
+      <button
+        class="tab-button"
+        :class="{ active: currentTab === 'manage' }"
+        @click="goToManageTab"
+      >
+        메뉴 관리
+      </button>
     </div>
     <!-- 주문 리스트 -->
     <div class="order-list" v-if="orders.length > 0">
@@ -177,13 +184,24 @@ export default {
     },
      // [CHANGED] 탭 전환
      goToOrdersTab() {
-      // 현재 화면이므로 do nothing or refresh
+      this.currentTab = "orders";
+      // 재조회 로직 or do nothing// 현재 화면이므로 do nothing or refresh
       // but for demonstration, let's just do nothing
     },
     goToClearTab() {
+      this.currentTab = "clear";
       const { restaurantId } = this.$route.params;
       this.$router.push({
         name: "TableOrderHistoryClearView",
+        params: { restaurantId }
+      });
+    },
+    // [CHANGED] 새 탭
+    goToManageTab() {
+      this.currentTab = "manage";
+      const { restaurantId } = this.$route.params;
+      this.$router.push({
+        name: "OwnerMenuManageView",
         params: { restaurantId }
       });
     },

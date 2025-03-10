@@ -6,6 +6,7 @@ import TableOrderHistoryView from '../views/TableOrderHistoryView.vue'
 import OwnerLoginView from '../views/OwnerLoginView.vue'
 import RestaurantOrderHistoryView from '../views/RestaurantOrderHistoryView.vue'
 import TableOrderHistoryClearView from '../views/TableOrderHistoryClearView.vue'
+import OwnerMenuManageView from '../views/OwnerMenuManageView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,7 +46,13 @@ const router = createRouter({
       path: "/restaurants/:restaurantId/tables",
       name: "TableOrderHistoryClearView",
       component: TableOrderHistoryClearView
-    }
+    },
+    // [CHANGED] 메뉴 관리 라우트 추가
+    {
+      path: "/restaurants/:restaurantId/menus/manage",
+      name: "OwnerMenuManageView",
+      component: OwnerMenuManageView
+    },
   ],
 })
 

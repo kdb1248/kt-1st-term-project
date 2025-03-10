@@ -25,6 +25,14 @@
         >
           테이블 주문내역 비우기
         </button>
+        <!-- [CHANGED] 메뉴 관리 탭 -->
+        <button
+            class="tab-button"
+            :class="{ active: currentTab === 'manage' }"
+            @click="goToManageTab"
+        >
+            메뉴 관리
+        </button>
       </div>
   
       <!-- (B) 테이블 목록 -->
@@ -168,6 +176,15 @@ export default {
     },
     goToClearTab() {
       // 현재 화면
+    },
+    // [CHANGED] 새 탭
+    goToManageTab() {
+      this.currentTab = "manage";
+      const { restaurantId } = this.$route.params;
+      this.$router.push({
+        name: "OwnerMenuManageView",
+        params: { restaurantId }
+      });
     },
     confirmClear(table) {
       // 팝업
