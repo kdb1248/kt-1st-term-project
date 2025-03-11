@@ -98,7 +98,8 @@
       // (2) tableOrderHistory API 호출
       try {
         const response = await axios.get(
-          `http://localhost:8080/restaurants/${restaurantId}/tables/${tableId}/orders/history?orderStatus=PENDING&orderCode=desc`
+          `http://localhost:8080/restaurants/${restaurantId}/tables/${tableId}/orders/history` +
+        `?orderStatus=PENDING&orderCode=desc&lang=${this.selectedLang}`
         );
         if (response.data.success) {
           this.orders = response.data.data; // array of order info
