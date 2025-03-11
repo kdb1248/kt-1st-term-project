@@ -22,11 +22,12 @@ public class RestaurantMenuInfoController {
     public ResponseEntity<?> getRestaurantMenus(
             @PathVariable("restaurantId") Long restaurantId,
             @PathVariable("menuCategoryId") Long menuCategoryId,
-            @RequestParam(name = "sort", required = false) String sortParam
+            @RequestParam(name = "sort", required = false) String sortParam,
+            @RequestParam(name = "lang", required = false, defaultValue = "kr") String lang // [CHANGED]
     ) {
         try {
             RestaurantMenuInfoResponse response =
-                    menuInfoService.getMenuList(restaurantId, menuCategoryId, sortParam);
+                    menuInfoService.getMenuList(restaurantId, menuCategoryId, sortParam, lang);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             // 404 Not Found, etc

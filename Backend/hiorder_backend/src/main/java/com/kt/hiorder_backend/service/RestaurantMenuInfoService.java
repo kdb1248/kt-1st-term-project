@@ -28,7 +28,7 @@ public class RestaurantMenuInfoService {
         this.menuRepository = menuRepository;
     }
 
-    public RestaurantMenuInfoResponse getMenuList(Long restaurantId, Long menuCategoryId, String sortParam) {
+    public RestaurantMenuInfoResponse getMenuList(Long restaurantId, Long menuCategoryId, String sortParam, String lang) {
         // 1) 식당 존재 확인
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new RuntimeException("해당 식당을 찾을 수 없습니다."));
@@ -54,9 +54,9 @@ public class RestaurantMenuInfoService {
         List<MenuDto> menuDtoList = menus.stream()
                 .map(m -> MenuDto.builder()
                         .menuId(m.getMenuId())
-                        .menuName(m.getMenuName())
+                        .menuName(getMenuNameByLang(m, lang)) // [CHANGED]
                         .price(m.getPrice())
-                        .menuDescription(m.getMenuDescription())
+                        .menuDescription(getMenuDescByLang(m, lang)) // [CHANGED]
                         .menuImageUrl(m.getMenuImageUrl())
                         .displayOrder(m.getDisplayOrder())
                         .build())
@@ -69,6 +69,46 @@ public class RestaurantMenuInfoService {
                 .data(menuDtoList)
                 .message("메뉴 조회에 성공했습니다.")
                 .build();
+    }
+    // [CHANGED] lang에 따라 메뉴명 반환
+    private String getMenuNameByLang(Menu m, String lang) {
+        switch (lang.toLowerCase()) {
+            case "en":
+                return (m.getMenuNameEn() != null && !m.getMenuNameEn().isEmpty())
+                        ? m.getMenuNameEn()
+                        : m.getMenuName();
+            case "zh":
+                return (m.getMenuNameZh() != null && !m.getMenuNameZh().isEmpty())
+                        ? m.getMenuNameZh()
+                        : m.getMenuName();
+            case "jp":
+                return (m.getMenuNameJp() != null && !m.getMenuNameJp().isEmpty())
+                        ? m.getMenuNameJp()
+                        : m.getMenuName();
+            default:
+                // kr or 기타
+                return m.getMenuName();
+        }
+    }
+
+    // [CHANGED] lang에 따라 메뉴설명 반환
+    private String getMenuDescByLang(Menu m, String lang) {
+        switch (lang.toLowerCase()) {
+            case "en":
+                return (m.getMenuDescriptionEn() != null && !m.getMenuDescriptionEn().isEmpty())
+                        ? m.getMenuDescriptionEn()
+                        : m.getMenuDescription();
+            case "zh":
+                return (m.getMenuDescriptionZh() != null && !m.getMenuDescriptionZh().isEmpty())
+                        ? m.getMenuDescriptionZh()
+                        : m.getMenuDescription();
+            case "jp":
+                return (m.getMenuDescriptionJp() != null && !m.getMenuDescriptionJp().isEmpty())
+                        ? m.getMenuDescriptionJp()
+                        : m.getMenuDescription();
+            default:
+                return m.getMenuDescription();
+        }
     }
 }
 
