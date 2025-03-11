@@ -119,6 +119,7 @@ export default {
       cart: [],
       toastVisible: false, // [CHANGED] for Bootstrap toast
       toastMessage: "", // [CHANGED] for Bootstrap toast
+      selectedLang: "kr", // 기본값을 kr(한국어)로
     };
   },
   computed: {
@@ -138,6 +139,10 @@ export default {
     if (savedCart) {
       this.cart = JSON.parse(savedCart);
     }
+    // localStorage에 저장된 언어 가져오기
+    const routeLang = this.$route.params.lang;
+    const storedLang = localStorage.getItem("selectedLang");
+    this.selectedLang = routeLang || storedLang || "kr";
   },
   methods: {
     increment(item) {
@@ -159,9 +164,10 @@ export default {
     },
     goBackToMenu() {
       const { restaurantId, tableId } = this.$route.params;
+      const currentLang = this.selectedLang|| localStorage.getItem('selectedLang') || 'kr';
       this.$router.push({
         name: "RestaurantMenuView",
-        params: { restaurantId, tableId },
+        params: { restaurantId, tableId, lang: currentLang },
       });
     },
     // [CHANGED] submitOrder with tableName from localStorage, show toast with backend message
@@ -170,7 +176,7 @@ export default {
       // [CHANGED] load tableName from localStorage
       const storedTableName =
         localStorage.getItem("tableName") || "테이블명미정";
-
+        const currentLang = localStorage.getItem('selectedLang') || 'kr';
       const requestBody = {
         orderTable: storedTableName, // 실제 테이블명
         orderItems: this.cart.map((item) => ({
@@ -189,17 +195,33 @@ export default {
         );
 
         if (response.status === 201 && response.data.success) {
-            // [CHANGED] Save success message in localStorage
-            localStorage.setItem("toastMessage", response.data.message || "주문이 성공적으로 생성되었습니다.");
+          this.showToast(response.data.message || "주문이 성공적으로 생성되었습니다.");
+          // (1) 주문 성공 시, 현재 선택된 언어 가져오기
+            const currentLang = this.selectedLang;
+            // (2) localStorage 등에 저장 (또는 router param 사용)
+            
+            this.cart = [];
+            this.saveCart();
+            
+          // (3) 1초 후 RestaurantMenuView로 이동
+            
+            this.$router.push({
+              name: 'RestaurantMenuView',
+              params: {
+                restaurantId,
+                tableId,
+                // 라우터 param으로 넘겨도 됨
+                lang: currentLang,
+              },
+            });
         
 
           // 주문 후 장바구니 비울지 여부
-          this.cart = [];
-          this.saveCart();
+          
           
 
-          // 즉시 메뉴 화면으로 이동
-          this.goBackToMenu();
+          // // 즉시 메뉴 화면으로 이동
+          // this.goBackToMenu();
         } else {
           // [CHANGED] if 201 but success=false? Rare, but let's handle
           this.showToast(response.data.message || "주문 실패");

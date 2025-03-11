@@ -7,7 +7,7 @@
         <p>{{ tableName }}</p>
       </div>
       <div class="header-actions">
-        <button class="icon-button lang-button">
+        <button class="icon-button lang-button" @click="openLangModal">
           <i class="fas fa-globe"></i> LANGUAGE
         </button>
       </div>
@@ -23,14 +23,15 @@
           :class="{ active: cat.menuCategoryId === selectedCategoryId }"
           @click="selectCategory(cat.menuCategoryId)"
         >
-          {{ cat.categoryName }}
+           <!-- [CHANGED] 번역된 카테고리명 표시 (menuCategoryName) -->
+          {{ cat.menuCategoryName }}
         </button>
       </div>
     </div>
 
     <!-- 현재 선택된 카테고리 표시 -->
     <div class="selected-category" v-if="selectedCategory">
-      {{ selectedCategory.categoryName }}
+      {{ selectedCategory.menuCategoryName }}
     </div>
 
     <!-- 메뉴 목록 -->
@@ -106,6 +107,24 @@
         </div>
       </div>
     </div>
+    <!-- [CHANGED] 언어 선택 모달 -->
+    <div class="lang-modal-overlay" v-if="showLangModal">
+      <div class="lang-modal-content">
+        <h4>언어 선택</h4>
+        <div class="lang-buttons">
+          <!-- 예: 'kr'(한국어), 'en'(영어), 'zh'(중국어), 'jp'(일본어) -->
+          <button 
+            v-for="langOption in langOptions" 
+            :key="langOption.code"
+            :class="['lang-btn', { active: selectedLang === langOption.code }]"
+            @click="chooseLanguage(langOption.code)"
+          >
+            {{ langOption.label }}
+          </button>
+        </div>
+        <button class="lang-close-btn" @click="closeLangModal">닫기</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -131,7 +150,15 @@ export default {
       // [CHANGED] Toast states
       toastVisible: false,
       toastMessage: "",
-    
+      // [CHANGED] 다국어 관련 상태
+      showLangModal: false,
+      selectedLang: "kr", // 기본값(한국어)
+      langOptions: [
+        { code: "kr", label: "한국어" },
+        { code: "en", label: "English" },
+        { code: "zh", label: "中文" },
+        { code: "jp", label: "日本語" },
+      ],
     };
   },
   computed: {
@@ -146,15 +173,19 @@ export default {
     },
   },
   async mounted() {
-    const { restaurantId, tableId } = this.$route.params;
-    
+    const { restaurantId, tableId, lang } = this.$route.params;
+    // 1) lang 파라미터가 있으면 그 언어 사용, 없으면 localStorage에서 사용, 둘 다 없으면 kr
+    this.selectedLang = lang || localStorage.getItem('selectedLang') || 'kr';
+
+    // 2) localStorage에 저장 (새로고침/재접속 시 유지)
+    localStorage.setItem('selectedLang', this.selectedLang);
     // [CHANGED] Check localStorage for toastMessage
     const savedToastMsg = localStorage.getItem("toastMessage");
     if (savedToastMsg) {
       this.showToast(savedToastMsg);
       localStorage.removeItem("toastMessage"); // remove to avoid repeated showing
     }
-    
+   
     try {
       // restaurantInfo
       const infoRes = await axios.get(
@@ -172,9 +203,10 @@ export default {
         return;
       }
 
-      // restaurantCategoryInfo
+      // (2) restaurantCategoryInfo API (sort=displayOrder)
+      // [CHANGED] lang 파라미터 추가
       const catRes = await axios.get(
-        `http://localhost:8080/restaurants/${restaurantId}/categories?sort=displayOrder`
+        `http://localhost:8080/restaurants/${restaurantId}/categories?sort=displayOrder&lang=${this.selectedLang}`
       );
       if (catRes.data.success) {
         this.categories = catRes.data.data;
@@ -208,7 +240,7 @@ export default {
       const { restaurantId } = this.$route.params;
       try {
         const menuRes = await axios.get(
-          `http://localhost:8080/restaurants/${restaurantId}/categories/${catId}/menus?sort=displayOrder`
+          `http://localhost:8080/restaurants/${restaurantId}/categories/${catId}/menus?sort=displayOrder&lang=${this.selectedLang}`
         );
         if (menuRes.data.success) {
           this.menus = menuRes.data.data;
@@ -238,17 +270,19 @@ export default {
     goToCart() {
       // “주문하기” 버튼 → OrderCartView 이동
       const { restaurantId, tableId } = this.$route.params;
+      const currentLang = this.selectedLang;
       this.$router.push({
         name: "OrderCartView",
-        params: { restaurantId, tableId },
+        params: { restaurantId, tableId, lang: currentLang },
       });
     },
     // 주문내역 화면으로 이동
     goToHistory() {
       const { restaurantId, tableId } = this.$route.params;
+      const currentLang = this.selectedLang;
       this.$router.push({
         name: "TableOrderHistoryView",
-        params: { restaurantId, tableId }
+        params: { restaurantId, tableId, lang: currentLang }
       });
     },
     handleError(err) {
@@ -269,6 +303,38 @@ export default {
         }
       } else {
         this.errorMessage = "네트워크 오류가 발생했습니다.";
+      }
+    },
+    // [CHANGED] 언어 모달 열기/닫기
+    openLangModal() {
+      this.showLangModal = true;
+    },
+    closeLangModal() {
+      this.showLangModal = false;
+    },
+    async chooseLanguage(langCode) {
+      this.selectedLang = langCode;
+      this.closeLangModal(); // 모달 닫기
+
+      // 언어 변경 후 카테고리/메뉴 다시 불러오기
+      const { restaurantId } = this.$route.params;
+      try {
+        const catRes = await axios.get(
+          `http://localhost:8080/restaurants/${restaurantId}/categories?sort=displayOrder&lang=${this.selectedLang}`
+        );
+        if (catRes.data.success) {
+          this.categories = catRes.data.data;
+          if (this.categories.length > 0) {
+            this.selectedCategoryId = this.categories[0].menuCategoryId;
+            await this.fetchMenus(this.selectedCategoryId);
+          } else {
+            this.menus = [];
+          }
+        } else {
+          this.errorMessage = catRes.data.message || "카테고리 조회 실패.";
+        }
+      } catch (err) {
+        this.handleError(err);
       }
     },
     // [CHANGED] Toast show function
@@ -316,6 +382,56 @@ export default {
 </script>
 
 <style scoped>
+/* [CHANGED] 언어 모달을 위한 추가 스타일 */
+.lang-modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.lang-modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 320px;
+  max-width: 90%;
+  text-align: center;
+}
+.lang-modal-content h4 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #333;
+}
+.lang-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+.lang-btn {
+  border: 1px solid #ddd;
+  background-color: #f8f8f8;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.lang-btn.active {
+  background-color: #00b8a9;
+  color: #fff;
+  border-color: #00b8a9;
+}
+.lang-close-btn {
+  background-color: #bbb;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
 /* 전체 컨테이너 스타일 */
 .menu-container {
   max-width: 100%;
