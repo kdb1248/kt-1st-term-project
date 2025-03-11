@@ -271,6 +271,15 @@ export default {
     },
     selectCategory(catId) {
       this.selectedCategoryId = catId;
+  
+      // 현재 선택한 카테고리 객체 찾기
+      const foundCat = this.categories.find(c => c.menuCategoryId === catId);
+      if (foundCat) {
+        // 폼에 카테고리 한글명을 저장해서, 백엔드로 넘길 때 활용
+        this.formData.categoryName = foundCat.menuCategoryName;
+      }
+
+      // 메뉴 목록 재조회
       this.fetchMenus(catId);
     },
     goLogout() {
@@ -279,9 +288,14 @@ export default {
     openCreateForm() {
       this.formMode = "create";
       // default category = selectedCategoryId
+      const catId = this.selectedCategoryId;
+
+  // 카테고리 목록에서 해당 ID를 찾아, 한글 카테고리명 가져오기
+      let foundCat = this.categories.find(c => c.menuCategoryId === catId);
       this.formData = {
         menuId: null,
         categoryId: this.selectedCategoryId || null,
+        categoryName: foundCat.menuCategoryName,
         menuNameKr: "",
         menuDescriptionKr: "",
         price: 0,
@@ -291,11 +305,16 @@ export default {
     },
     openEditForm(menu) {
       this.formMode = "edit";
+      const catId = this.selectedCategoryId;
+
+  // 카테고리 목록에서 해당 ID를 찾아, 한글 카테고리명 가져오기
+      let foundCat = this.categories.find(c => c.menuCategoryId === catId);
       // for now, assume "menu.categoryId" is in data or we store it
       // if not, we might store "categoryId" in the response
       this.formData = {
         menuId: menu.menuId,
         categoryId: this.selectedCategoryId,
+        categoryName: foundCat.menuCategoryName,
         menuNameKr: menu.menuName, // or menu.menuNameKr if stored
         menuDescriptionKr: menu.menuDescription || "",  // if we had "menuDescription" from API
         price: menu.price,
@@ -314,7 +333,7 @@ export default {
           // (A) 등록 API
           const reqBody = {
             menuCategoryId: this.formData.categoryId,
-            menuCategoryName: "", // (옵션) form에서 카테고리명 직접 변경 가능하면 입력
+            menuCategoryName: this.formData.categoryName, // (옵션) form에서 카테고리명 직접 변경 가능하면 입력
             menuName: this.formData.menuNameKr,
             menuDescription: this.formData.menuDescriptionKr,
             price: this.formData.price,
@@ -342,7 +361,7 @@ export default {
             // 수정 시, 백엔드가 어떤 DTO를 요구하는지에 맞춰야 함
             // 예: MenuUpdateRequest
             menuCategoryId: this.formData.categoryId,
-            menuCategoryName: "", 
+            menuCategoryName: this.formData.categoryName, 
             menuName: this.formData.menuNameKr,
             menuDescription: this.formData.menuDescriptionKr,
             price: this.formData.price,
@@ -482,7 +501,7 @@ export default {
 .icon-button {
   background: none;
   border: none;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   color: #333;
 }

@@ -330,6 +330,7 @@ export default {
   border-radius: 8px;
   padding: 15px;
   margin: 0 auto;
+  width: 30%;
 }
 .summary-item {
   display: flex;
