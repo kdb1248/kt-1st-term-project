@@ -133,6 +133,17 @@
         </div>
       </div>
     </div>
+    <!-- (G) [추가] 메뉴 삭제 확인 모달 -->
+    <div class="modal-overlay" v-if="showDeleteModal">
+      <div class="modal-content">
+        <h3>메뉴 삭제</h3>
+        <p>해당 메뉴 ({{ deleteTargetMenu.menuName }}) 을 삭제하시겠습니까?</p>
+        <div class="modal-buttons">
+          <button class="btn btn-secondary" @click="cancelDelete">아니오</button>
+          <button class="btn btn-danger" @click="confirmDeleteMenu">삭제</button>
+        </div>
+      </div>
+    </div>
     <!-- [CHANGED] 토스트 메시지 (Bootstrap 예시와 유사) -->
     <div
       class="toast-container position-fixed bottom-0 end-0 p-3"
@@ -186,6 +197,9 @@ export default {
         price: 0,
         menuImageUrl: ""
       },
+      // (1) [추가] 삭제 모달 상태/대상
+      showDeleteModal: false,
+      deleteTargetMenu: null,
       /* [CHANGED] Toast 관련 */
       toastVisible: false,
       toastMessage: "",
@@ -361,8 +375,50 @@ export default {
 
       this.showFormModal = false;
     },
+    // (3) [CHANGED] 메뉴 삭제 로직
     deleteMenu(menu) {
-      alert(`삭제 API 호출 예정: menuId=${menu.menuId}`);
+      // 팝업 띄우기
+      this.deleteTargetMenu = menu;
+      this.showDeleteModal = true;
+    },
+    cancelDelete() {
+      this.showDeleteModal = false;
+      this.deleteTargetMenu = null;
+    },
+    async confirmDeleteMenu() {
+      if (!this.deleteTargetMenu) {
+        return;
+      }
+      const { restaurantId } = this.$route.params;
+      const menuId = this.deleteTargetMenu.menuId;
+
+      try {
+        // 예) DELETE /restaurants/{restaurantId}/menus/{menuId}
+        const response = await axios.delete(
+          `http://localhost:8080/restaurants/${restaurantId}/menus/${menuId}`
+        );
+
+        if (response.data.success) {
+          this.showToast(response.data.message || "메뉴가 삭제되었습니다.");
+          // 메뉴 목록 재조회
+          if (this.selectedCategoryId) {
+            this.fetchMenus(this.selectedCategoryId);
+          }
+        } else {
+          this.showToast(response.data.message || "메뉴 삭제 실패");
+        }
+      } catch (err) {
+        if (err.response) {
+          const backendMsg = err.response.data.msg || err.response.data.message;
+          this.showToast(backendMsg || "서버 오류가 발생했습니다.");
+        } else {
+          this.showToast("네트워크 오류가 발생했습니다.");
+        }
+      }
+
+      // 모달 닫기
+      this.showDeleteModal = false;
+      this.deleteTargetMenu = null;
     },
     handleError(err) {
       if (err.response) {
