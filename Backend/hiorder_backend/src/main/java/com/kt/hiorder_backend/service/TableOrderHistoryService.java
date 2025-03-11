@@ -2,6 +2,7 @@ package com.kt.hiorder_backend.service;
 
 import com.kt.hiorder_backend.dto.TableOrderHistoryResponse;
 import com.kt.hiorder_backend.entity.Orders;
+import com.kt.hiorder_backend.entity.Menu;
 import com.kt.hiorder_backend.entity.OrderItems;
 import com.kt.hiorder_backend.entity.Restaurant;
 import com.kt.hiorder_backend.entity.RestaurantTables;
@@ -39,7 +40,8 @@ public class TableOrderHistoryService {
             Long restaurantId,
             Long tableId,
             String orderStatus,
-            String orderCode
+            String orderCode,
+            String lang // <-- 추가
     ) {
         // 1) 식당, 테이블 존재 여부
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
@@ -65,10 +67,17 @@ public class TableOrderHistoryService {
             // 아이템 목록 DTO
             List<TableOrderHistoryResponse.OrderItemInfo> itemInfos = new ArrayList<>();
             for (OrderItems oi : itemList) {
+                // (A) Menu 엔티티 참조
+                Menu menu = oi.getMenu();
+
+                // (B) lang 에 따라 다른 이름을 선택
+                String translatedMenuName = resolveMenuName(menu, lang);
+
+
                 itemInfos.add(
                     TableOrderHistoryResponse.OrderItemInfo.builder()
                         .menuId(oi.getMenu() != null ? oi.getMenu().getMenuId() : null)
-                        .menuName(oi.getMenuName())
+                        .menuName(translatedMenuName) // <-- 수정된 부분
                         .quantity(oi.getQuantity())
                         .itemPrice(oi.getItemPrice())
                         .build()
@@ -93,6 +102,32 @@ public class TableOrderHistoryService {
                 .data(orderInfoList)
                 .message("주문 이력을 조회했습니다.")
                 .build();
+    }
+    /**
+     * lang에 따라 menu 엔티티의 적절한 이름(menuNameEn, menuNameZh, menuNameJp 등)을 반환
+     * 만약 해당 언어 컬럼이 null이거나 비어있다면 기본값(한글 menuName) 사용
+     */
+    private String resolveMenuName(Menu menu, String lang) {
+        if (menu == null) {
+            return "(알 수 없는 메뉴)";
+        }
+        switch (lang) {
+            case "en":
+                return (menu.getMenuNameEn() != null && !menu.getMenuNameEn().isEmpty())
+                        ? menu.getMenuNameEn()
+                        : menu.getMenuName(); // fallback
+            case "zh":
+                return (menu.getMenuNameZh() != null && !menu.getMenuNameZh().isEmpty())
+                        ? menu.getMenuNameZh()
+                        : menu.getMenuName(); 
+            case "jp":
+                return (menu.getMenuNameJp() != null && !menu.getMenuNameJp().isEmpty())
+                        ? menu.getMenuNameJp()
+                        : menu.getMenuName(); 
+            default:
+                // kr or anything else
+                return menu.getMenuName();
+        }
     }
 }
 

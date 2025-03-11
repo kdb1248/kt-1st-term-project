@@ -25,10 +25,11 @@ public class TableOrderHistoryController {
             // [CHANGED] QueryParam name = orderStatus
             @RequestParam(name="orderStatus", required=false, defaultValue="PENDING") String orderStatus,
             // [CHANGED] QueryParam name = orderCode
-            @RequestParam(name="orderCode", required=false, defaultValue="desc") String orderCode
+            @RequestParam(name="orderCode", required=false, defaultValue="desc") String orderCode,
+            @RequestParam(name="lang", required=false, defaultValue="kr") String lang // <-- 추가
     ) {
         try {
-            TableOrderHistoryResponse response = historyService.getTableOrderHistory(restaurantId, tableId, orderStatus, orderCode);
+            TableOrderHistoryResponse response = historyService.getTableOrderHistory(restaurantId, tableId, orderStatus, orderCode, lang);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(createErrorResponse(400, "요청 파라미터가 누락되었거나 형식이 올바르지 않습니다."));
