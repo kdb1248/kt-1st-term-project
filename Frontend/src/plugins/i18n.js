@@ -26,6 +26,7 @@ const messages = {
         recentOrder:'최근 주문',
         orderCode:'주문번호',
         noOrderHistory:'주문 내역이 없습니다.',
+        orderSuccess:'주문이 성공적으로 완료되었습니다.',
         // ...
       }
     },
@@ -52,6 +53,7 @@ const messages = {
         orderCode:'Order Code',
         noOrderHistory:'No order history',
         sum:'Sum',
+        orderSuccess:'Order successfully completed',
         // ...
       }
     },
@@ -78,6 +80,7 @@ const messages = {
         recentOrder:'最近订单',
         orderCode:'订单编号',
         noOrderHistory:'没有订单历史',
+        orderSuccess:'订单成功完成',
         // ...
       }
     },
@@ -104,6 +107,7 @@ const messages = {
         recentOrder:'最近の注文',
         orderCode:'注文番号',
         noOrderHistory:'注文履歴がありません',
+        orderSuccess:'注文が成功しました',
         // ...
       }
     },

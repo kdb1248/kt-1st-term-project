@@ -202,7 +202,18 @@ export default {
 
         if (response.status === 201 && response.data.success) {
           // (A) localStorage에 toastMessage 저장 (또는 바로 showToast)
-          this.showToast(response.data.message || "주문이 성공적으로 생성되었습니다.");
+          // localStorage에 저장된 언어 가져오기
+          const savedLocale = localStorage.getItem('locale');
+          if (savedLocale) {
+            this.$i18n.locale = savedLocale;
+            this.selectedLang = savedLocale;
+          } else {
+            // 기본값
+            this.$i18n.locale = 'kr';
+            this.selectedLang = 'kr';
+          }
+          this.showToast(this.$t('message.orderSuccess') || response.data.message || "주문이 성공적으로 생성되었습니다.");
+          localStorage.setItem("toastMessage", this.$t('message.orderSuccess'));
           // this.showToast(response.data.message || "주문이 성공적으로 생성되었습니다.");
           // (1) 주문 성공 시, 현재 선택된 언어 가져오기
             const currentLang = this.selectedLang;
@@ -212,7 +223,7 @@ export default {
             this.saveCart();
             
           // (3) 1초 후 RestaurantMenuView로 이동
-            
+            setTimeout(() => {
             this.$router.push({
               name: 'RestaurantMenuView',
               params: {
@@ -220,9 +231,9 @@ export default {
                 tableId,
                 // 라우터 param으로 넘겨도 됨
                 lang: currentLang,
-              },
+              }
             });
-        
+          }, 1000);
 
           // 주문 후 장바구니 비울지 여부
           
