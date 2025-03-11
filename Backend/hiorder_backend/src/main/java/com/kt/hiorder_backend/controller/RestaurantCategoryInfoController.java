@@ -21,10 +21,11 @@ public class RestaurantCategoryInfoController {
     @GetMapping("/{restaurantId}/categories")
     public ResponseEntity<?> getRestaurantCategories(
             @PathVariable("restaurantId") Long restaurantId,
-            @RequestParam(name = "sort", required = false) String sortParam
+            @RequestParam(name = "sort", required = false) String sortParam,
+            @RequestParam(name = "lang", required = false, defaultValue = "kr") String lang // [CHANGED]
     ) {
         try {
-            RestaurantCategoryInfoResponse response = categoryInfoService.getMenuCategories(restaurantId, sortParam);
+            RestaurantCategoryInfoResponse response = categoryInfoService.getMenuCategories(restaurantId, sortParam, lang);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             // 식당 없을 때 등

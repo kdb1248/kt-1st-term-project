@@ -23,7 +23,7 @@ public class RestaurantCategoryInfoService {
         this.menuCategoryRepository = menuCategoryRepository;
     }
 
-    public RestaurantCategoryInfoResponse getMenuCategories(Long restaurantId, String sortParam) {
+    public RestaurantCategoryInfoResponse getMenuCategories(Long restaurantId, String sortParam, String lang) {
         // 1) 식당 존재 여부 확인
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
                 .orElseThrow(() -> new RuntimeException("해당 식당을 찾을 수 없습니다."));
@@ -43,7 +43,7 @@ public class RestaurantCategoryInfoService {
         List<MenuCategoryDto> dtoList = categories.stream()
                 .map(cat -> MenuCategoryDto.builder()
                         .menuCategoryId(cat.getMenuCategoryId())
-                        .menuCategoryName(cat.getMenuCategoryName())
+                        .menuCategoryName(getCategoryNameByLang(cat, lang)) // [CHANGED]
                         .displayOrder(cat.getDisplayOrder())
                         .build())
                 .collect(Collectors.toList());
@@ -55,6 +55,26 @@ public class RestaurantCategoryInfoService {
                 .data(dtoList)
                 .message("메뉴 카테고리 조회에 성공했습니다.")
                 .build();
+    }
+    // [CHANGED] lang에 따라 카테고리명 반환
+    private String getCategoryNameByLang(MenuCategory cat, String lang) {
+        switch (lang.toLowerCase()) {
+            case "en":
+                return (cat.getMenuCategoryNameEn() != null && !cat.getMenuCategoryNameEn().isEmpty())
+                        ? cat.getMenuCategoryNameEn()
+                        : cat.getMenuCategoryName(); // fallback = 한글
+            case "zh":
+                return (cat.getMenuCategoryNameZh() != null && !cat.getMenuCategoryNameZh().isEmpty())
+                        ? cat.getMenuCategoryNameZh()
+                        : cat.getMenuCategoryName();
+            case "jp":
+                return (cat.getMenuCategoryNameJp() != null && !cat.getMenuCategoryNameJp().isEmpty())
+                        ? cat.getMenuCategoryNameJp()
+                        : cat.getMenuCategoryName();
+            default:
+                // "kr" or 기타
+                return cat.getMenuCategoryName();
+        }
     }
 }
 
