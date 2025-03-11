@@ -2,7 +2,7 @@
     <div class="history-container">
       <!-- 상단 헤더 -->
       <div class="history-header">
-        <h2>주문 내역</h2>
+        <h2>{{ $t('message.orderHistory') }}</h2>
         <button class="close-btn" @click="goBackToMenu">X</button>
         <div class="table-name-display">
           <span>{{ tableName }}</span>
@@ -19,7 +19,7 @@
           <!-- 왼편: 번호 표시 (1,2,3...), 최근주문이면 하이라이트 -->
           <div class="order-index" :class="{ highlight: index === 0 }">
             {{ index+1 }}
-            <span v-if="index === 0" class="recent-badge" nowrap>최근 주문</span>
+            <span v-if="index === 0" class="recent-badge" nowrap>{{ $t('message.recentOrder') }}</span>
           </div>
   
           <!-- 중간: 시간/코드 -->
@@ -28,7 +28,7 @@
               {{ formatDateTime(order.createdAt) }}
             </div>
             <div class="order-code">
-              주문번호 #{{ order.orderCode }}
+              {{ $t('message.orderCode') }} #{{ order.orderCode }}
             </div>
           </div>
   
@@ -46,13 +46,13 @@
   
           <!-- 맨 오른쪽: 총금액 -->
           <div class="order-amount">
-            {{ order.totalAmount.toLocaleString() }}원
+            {{ order.totalAmount.toLocaleString() }} {{ $t('message.won') }}
           </div>
         </div>
       </div>
   
       <div class="empty-history" v-else>
-        주문 내역이 없습니다.
+        {{ $t('message.noOrderHistory') }}
       </div>
   
       <!-- 에러 메시지 -->
@@ -77,7 +77,15 @@
     },
     async mounted() {
       const { restaurantId, tableId } = this.$route.params;
-  
+      const savedLocale = localStorage.getItem('locale');
+      if (savedLocale) {
+        this.$i18n.locale = savedLocale;
+        this.selectedLang = savedLocale;
+      } else {
+        // 기본값
+        this.$i18n.locale = 'kr';
+        this.selectedLang = 'kr';
+      }
       // (1) tableName 불러오기 (localStorage or re-fetch)
       const storedTableName = localStorage.getItem("tableName");
       if (storedTableName) {

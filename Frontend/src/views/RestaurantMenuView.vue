@@ -41,14 +41,14 @@
           <div class="menu-details">
             <h4 class="menu-name">{{ menu.menuName }}</h4>
             <p class="menu-description">{{ menu.menuDescription }}</p>
-            <p class="menu-price">{{ menu.price }}원</p>
+            <p class="menu-price">{{ menu.price }}{{ $t('message.won') }}</p>
           </div>
           <div class="menu-image">
             <img v-if="menu.menuImageUrl" :src="menu.menuImageUrl" alt="메뉴이미지" />
           </div>
         </div>
         <div class="menu-actions">
-          <button class="add-button" @click="addToCart(menu)">담기</button>
+          <button class="add-button" @click="addToCart(menu)">{{ $t('message.addToCart') }}</button>
         </div>
       </div>
     </div>
@@ -57,10 +57,11 @@
     <div class="cart-button-container">
        <!-- [CHANGED] 주문내역 버튼 (왼쪽) + 주문하기 버튼 (오른쪽) -->
        <button class="history-button" @click="goToHistory">
-        주문내역 <i class="fa-light fa-receipt"></i>
+         <i class="fa-light fa-receipt"></i>
+         {{ $t('message.orderHistory') }}     
       </button>
       <button class="cart-button" @click="goToCart">
-        주문하기 ({{ cartCount }}) <i class="fas fa-shopping-cart"></i>
+        {{ $t('message.cartTitle') }} ({{ cartCount }}) <i class="fas fa-shopping-cart"></i>
       </button>
     </div>
 
@@ -82,7 +83,7 @@
         :class="{ show: toastVisible }"
       >
         <div class="toast-header">
-          <strong class="me-auto">알림</strong>
+          <strong class="me-auto">{{ $t('message.toastTitle') }}</strong>
           <small class="text-muted"></small>
           <button
             type="button"
@@ -99,18 +100,18 @@
     <!-- (2) 로그아웃 모달 -->
     <div class="modal-overlay" v-if="showLogoutModal">
       <div class="modal-content">
-        <h3>로그아웃</h3>
-        <p>정말 로그아웃하시겠습니까?</p>
+        <h3>{{ $t('message.logout') }}</h3>
+        <p>{{ $t('message.confirmLogout') }}</p>
         <div class="modal-buttons">
-          <button class="btn btn-secondary" @click="cancelLogout">아니오</button>
-          <button class="btn btn-danger" @click="doLogout">로그아웃</button>
+          <button class="btn btn-secondary" @click="cancelLogout">{{ $t('message.no') }}</button>
+          <button class="btn btn-danger" @click="doLogout">{{ $t('message.logout') }}</button>
         </div>
       </div>
     </div>
     <!-- [CHANGED] 언어 선택 모달 -->
     <div class="lang-modal-overlay" v-if="showLangModal">
       <div class="lang-modal-content">
-        <h4>언어 선택</h4>
+        <h4>{{ $t('message.languageSelection') }}</h4>
         <div class="lang-buttons">
           <!-- 예: 'kr'(한국어), 'en'(영어), 'zh'(중국어), 'jp'(일본어) -->
           <button 
@@ -122,7 +123,7 @@
             {{ langOption.label }}
           </button>
         </div>
-        <button class="lang-close-btn" @click="closeLangModal">닫기</button>
+        <button class="lang-close-btn" @click="closeLangModal">{{ $t('message.close') }}</button>
       </div>
     </div>
   </div>
@@ -175,7 +176,17 @@ export default {
   async mounted() {
     const { restaurantId, tableId, lang } = this.$route.params;
     // 1) lang 파라미터가 있으면 그 언어 사용, 없으면 localStorage에서 사용, 둘 다 없으면 kr
-    this.selectedLang = localStorage.getItem('selectedLang') || lang || 'kr';
+    const savedLocale = localStorage.getItem('locale');
+    if (savedLocale) {
+    this.$i18n.locale = savedLocale;
+    this.selectedLang = savedLocale;
+    } else {
+      // 기본값
+      this.$i18n.locale = 'kr';
+      this.selectedLang = 'kr';
+    }
+
+    
     
 
     // // 2) localStorage에 저장 (새로고침/재접속 시 유지)
@@ -315,6 +326,9 @@ export default {
     },
     async chooseLanguage(langCode) {
       this.selectedLang = langCode;
+      this.$i18n.locale = langCode;
+       // [선택사항] 로컬스토리지에 저장
+      localStorage.setItem('locale', langCode);
       this.closeLangModal(); // 모달 닫기
 
       // 언어 변경 후 카테고리/메뉴 다시 불러오기

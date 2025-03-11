@@ -2,7 +2,7 @@
   <div class="cart-container">
     <!-- 헤더 영역 -->
     <div class="cart-header">
-      <h2>장바구니</h2>
+      <h2>{{ $t('message.cartTitle') }}</h2>
 
       <!-- 우측 상단 X 버튼 -->
       <button class="close-btn" @click="goBackToMenu">X</button>
@@ -11,14 +11,14 @@
       <div class="cart-summary">
         <div class="summary-card">
           <div class="summary-item">
-            <span class="summary-label">총 수량</span>
-            <span class="summary-value">{{ totalQuantity }}개</span>
+            <span class="summary-label">{{ $t('message.totalQuantity') }}</span>
+            <span class="summary-value">{{ totalQuantity }} {{ $t('message.quantity') }}</span>
           </div>
           <div class="divider"></div>
           <div class="summary-item">
-            <span class="summary-label">총 금액</span>
+            <span class="summary-label">{{ $t('message.totalAmount') }}</span>
             <span class="summary-value price"
-              >{{ totalPrice.toLocaleString() }}원</span
+              >{{ totalPrice.toLocaleString() }}{{ $t('message.won') }}</span
             >
           </div>
         </div>
@@ -29,9 +29,9 @@
     <div class="cart-list-container">
       <div v-if="cart.length === 0" class="empty-cart">
         <i class="fas fa-shopping-cart empty-icon"></i>
-        <p>장바구니가 비어있습니다</p>
+        <p>{{ $t('message.noCartItems') }}</p>
         <button class="go-shopping-btn" @click="goBackToMenu">
-          메뉴 보러가기
+          {{ $t('message.goShopping') }}
         </button>
       </div>
 
@@ -40,7 +40,7 @@
           <div class="cart-item-content">
             <div class="cart-item-info">
               <h4 class="item-name">{{ item.menuName }}</h4>
-              <p class="item-price">{{ item.price.toLocaleString() }}원</p>
+              <p class="item-price">{{ item.price.toLocaleString() }} {{ $t('message.won') }}</p>
             </div>
             <div class="cart-item-actions">
               <div class="quantity-control">
@@ -62,9 +62,9 @@
             </div>
           </div>
           <div class="item-total">
-            <span class="total-label">합계</span>
+            <span class="total-label">{{ $t('message.sum') }}</span>
             <span class="total-price"
-              >{{ (item.price * item.quantity).toLocaleString() }}원</span
+              >{{ (item.price * item.quantity).toLocaleString() }} {{ $t('message.won') }}</span
             >
           </div>
         </div>
@@ -74,7 +74,7 @@
     <!-- 하단 주문 버튼 -->
     <div class="cart-footer" v-if="cart.length > 0">
       <button class="order-btn" @click="submitOrder">
-        {{ totalPrice.toLocaleString() }}원 주문하기
+        {{ totalPrice.toLocaleString() }} {{ $t('message.won') }} {{ $t('message.order') }}
       </button>
     </div>
   </div>
@@ -93,7 +93,7 @@
       :class="{ show: toastVisible }"
     >
       <div class="toast-header">
-        <strong class="me-auto">알림</strong>
+        <strong class="me-auto">{{ $t('message.toastTitle') }}</strong>
         <small class="text-muted"></small>
         <button
           type="button"
@@ -140,9 +140,15 @@ export default {
       this.cart = JSON.parse(savedCart);
     }
     // localStorage에 저장된 언어 가져오기
-    const routeLang = this.$route.params.lang;
-    const storedLang = localStorage.getItem("selectedLang");
-    this.selectedLang = routeLang || storedLang || "kr";
+    const savedLocale = localStorage.getItem('locale');
+    if (savedLocale) {
+      this.$i18n.locale = savedLocale;
+      this.selectedLang = savedLocale;
+    } else {
+      // 기본값
+      this.$i18n.locale = 'kr';
+      this.selectedLang = 'kr';
+    }
   },
   methods: {
     increment(item) {
@@ -195,7 +201,9 @@ export default {
         );
 
         if (response.status === 201 && response.data.success) {
+          // (A) localStorage에 toastMessage 저장 (또는 바로 showToast)
           this.showToast(response.data.message || "주문이 성공적으로 생성되었습니다.");
+          // this.showToast(response.data.message || "주문이 성공적으로 생성되었습니다.");
           // (1) 주문 성공 시, 현재 선택된 언어 가져오기
             const currentLang = this.selectedLang;
             // (2) localStorage 등에 저장 (또는 router param 사용)
