@@ -175,10 +175,11 @@ export default {
   async mounted() {
     const { restaurantId, tableId, lang } = this.$route.params;
     // 1) lang 파라미터가 있으면 그 언어 사용, 없으면 localStorage에서 사용, 둘 다 없으면 kr
-    this.selectedLang = lang || localStorage.getItem('selectedLang') || 'kr';
+    this.selectedLang = localStorage.getItem('selectedLang') || lang || 'kr';
+    
 
-    // 2) localStorage에 저장 (새로고침/재접속 시 유지)
-    localStorage.setItem('selectedLang', this.selectedLang);
+    // // 2) localStorage에 저장 (새로고침/재접속 시 유지)
+    // localStorage.setItem('selectedLang', this.selectedLang);
     // [CHANGED] Check localStorage for toastMessage
     const savedToastMsg = localStorage.getItem("toastMessage");
     if (savedToastMsg) {
@@ -330,6 +331,7 @@ export default {
           } else {
             this.menus = [];
           }
+          localStorage.setItem('selectedLang', this.selectedLang);
         } else {
           this.errorMessage = catRes.data.message || "카테고리 조회 실패.";
         }
