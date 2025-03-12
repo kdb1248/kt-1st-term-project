@@ -176,7 +176,7 @@ export default {
   async mounted() {
     const { restaurantId, tableId, lang } = this.$route.params;
     // 1) lang 파라미터가 있으면 그 언어 사용, 없으면 localStorage에서 사용, 둘 다 없으면 kr
-    const savedLocale = localStorage.getItem('locale');
+    const savedLocale = localStorage.getItem(`locale_${tableId}`);
     if (savedLocale) {
     this.$i18n.locale = savedLocale;
     this.selectedLang = savedLocale;
@@ -192,10 +192,10 @@ export default {
     // // 2) localStorage에 저장 (새로고침/재접속 시 유지)
     // localStorage.setItem('selectedLang', this.selectedLang);
     // [CHANGED] Check localStorage for toastMessage
-    const savedToastMsg = localStorage.getItem("toastMessage");
+    const savedToastMsg = localStorage.getItem(`toastMessage_${tableId}`);
     if (savedToastMsg) {
       this.showToast(savedToastMsg);
-      localStorage.removeItem("toastMessage"); // remove to avoid repeated showing
+      localStorage.removeItem(`toastMessage_${tableId}`); // remove to avoid repeated showing
     }
    
     try {
@@ -205,10 +205,8 @@ export default {
       );
       if (infoRes.data.success) {
         this.restaurantName = infoRes.data.restaurantName;
-        this.tableName = infoRes.data.tableName;
-
-        // [CHANGED] save tableName in localStorage so OrderCartView can use it
-        localStorage.setItem("tableName", this.tableName);
+        this.tableName = infoRes.data.tableName; // <-- 여기가 추가되어야 함
+        localStorage.setItem(`tableName_${tableId}`, infoRes.data.tableName);
       
       } else {
         this.errorMessage = infoRes.data.message || "식당정보 조회 실패.";
@@ -234,7 +232,9 @@ export default {
       }
 
       // localStorage에 저장된 cart 있으면 불러오기 (새로고침 대비)
-      const savedCart = localStorage.getItem("cart");
+      const savedCart = localStorage.getItem(`cart_${tableId}`);
+      
+
       if (savedCart) {
         this.cart = JSON.parse(savedCart);
       }
@@ -264,7 +264,10 @@ export default {
       }
     },
     addToCart(menu) {
-      // 장바구니에 같은 menuId가 있으면 수량만 +1
+      // 1) route params에서 tableId를 꺼낸다
+      const { tableId } = this.$route.params;
+
+      // 2) cart 배열에서 동일 메뉴 찾기
       const existing = this.cart.find((item) => item.menuId === menu.menuId);
       if (existing) {
         existing.quantity += 1;
@@ -276,8 +279,9 @@ export default {
           quantity: 1,
         });
       }
-      // localStorage에 저장
-      localStorage.setItem("cart", JSON.stringify(this.cart));
+
+      // 3) localStorage에 저장
+      localStorage.setItem(`cart_${tableId}`, JSON.stringify(this.cart));
     },
     goToCart() {
       // “주문하기” 버튼 → OrderCartView 이동
@@ -325,10 +329,10 @@ export default {
       this.showLangModal = false;
     },
     async chooseLanguage(langCode) {
-      this.selectedLang = langCode;
+      const { tableId } = this.$route.params;
       this.$i18n.locale = langCode;
-       // [선택사항] 로컬스토리지에 저장
-      localStorage.setItem('locale', langCode);
+      this.selectedLang = langCode;
+      localStorage.setItem(`locale_${tableId}`, langCode);
       this.closeLangModal(); // 모달 닫기
 
       // 언어 변경 후 카테고리/메뉴 다시 불러오기

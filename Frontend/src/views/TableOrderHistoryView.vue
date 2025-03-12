@@ -77,17 +77,17 @@
     },
     async mounted() {
       const { restaurantId, tableId } = this.$route.params;
-      const savedLocale = localStorage.getItem('locale');
+      // 1) localStorage에서 locale_${tableId} 읽기
+      const savedLocale = localStorage.getItem(`locale_${tableId}`);
       if (savedLocale) {
         this.$i18n.locale = savedLocale;
         this.selectedLang = savedLocale;
       } else {
-        // 기본값
         this.$i18n.locale = 'kr';
         this.selectedLang = 'kr';
       }
       // (1) tableName 불러오기 (localStorage or re-fetch)
-      const storedTableName = localStorage.getItem("tableName");
+      const storedTableName = localStorage.getItem(`tableName_${tableId}`) || "테이블명미정";
       if (storedTableName) {
         this.tableName = storedTableName;
       } else {

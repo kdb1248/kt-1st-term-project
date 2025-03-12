@@ -135,17 +135,18 @@ export default {
   },
   mounted() {
     // localStorage에서 cart 불러오기
-    const savedCart = localStorage.getItem("cart");
+    const { tableId } = this.$route.params;
+    const savedCart = localStorage.getItem(`cart_${tableId}`);
     if (savedCart) {
       this.cart = JSON.parse(savedCart);
     }
     // localStorage에 저장된 언어 가져오기
-    const savedLocale = localStorage.getItem('locale');
+    // 1) localStorage에서 locale_${tableId} 읽기
+    const savedLocale = localStorage.getItem(`locale_${tableId}`);
     if (savedLocale) {
       this.$i18n.locale = savedLocale;
       this.selectedLang = savedLocale;
     } else {
-      // 기본값
       this.$i18n.locale = 'kr';
       this.selectedLang = 'kr';
     }
@@ -166,7 +167,9 @@ export default {
       this.saveCart();
     },
     saveCart() {
-      localStorage.setItem("cart", JSON.stringify(this.cart));
+      // 1) 라우트 파라미터에서 tableId 가져오기
+      const { tableId } = this.$route.params;
+      localStorage.setItem(`cart_${tableId}`, JSON.stringify(this.cart));
     },
     goBackToMenu() {
       const { restaurantId, tableId } = this.$route.params;
@@ -180,9 +183,17 @@ export default {
     async submitOrder() {
       const { restaurantId, tableId } = this.$route.params;
       // [CHANGED] load tableName from localStorage
-      const storedTableName =
-        localStorage.getItem("tableName") || "테이블명미정";
-        const currentLang = localStorage.getItem('selectedLang') || 'kr';
+      const storedTableName = localStorage.getItem(`tableName_${tableId}`) || "테이블명미정";
+      
+      const savedLocale = localStorage.getItem(`locale_${tableId}`);
+          if (savedLocale) {
+            this.$i18n.locale = savedLocale;
+            this.selectedLang = savedLocale;
+          } else {
+            // 기본값
+            this.$i18n.locale = 'kr';
+            this.selectedLang = 'kr';
+          }
       const requestBody = {
         orderTable: storedTableName, // 실제 테이블명
         orderItems: this.cart.map((item) => ({
@@ -201,27 +212,17 @@ export default {
         );
 
         if (response.status === 201 && response.data.success) {
-          // (A) localStorage에 toastMessage 저장 (또는 바로 showToast)
-          // localStorage에 저장된 언어 가져오기
-          const savedLocale = localStorage.getItem('locale');
-          if (savedLocale) {
-            this.$i18n.locale = savedLocale;
-            this.selectedLang = savedLocale;
-          } else {
-            // 기본값
-            this.$i18n.locale = 'kr';
-            this.selectedLang = 'kr';
-          }
-          this.showToast(this.$t('message.orderSuccess') || response.data.message || "주문이 성공적으로 생성되었습니다.");
-          localStorage.setItem("toastMessage", this.$t('message.orderSuccess'));
-          // this.showToast(response.data.message || "주문이 성공적으로 생성되었습니다.");
-          // (1) 주문 성공 시, 현재 선택된 언어 가져오기
-            const currentLang = this.selectedLang;
+             // i18n 번역 키를 우선 사용
+            const successMsg = this.$t('message.orderSuccess'); 
+            // or this.showToast(response.data.message || successMsg);
+
+            this.showToast(successMsg || response.data.message || "주문이 성공적으로 생성되었습니다.");
             // (2) localStorage 등에 저장 (또는 router param 사용)
+            localStorage.setItem(`toastMessage_${tableId}`, successMsg);
             
             this.cart = [];
             this.saveCart();
-            
+            localStorage.removeItem(`tableName_${tableId}`);
           // (3) 1초 후 RestaurantMenuView로 이동
             setTimeout(() => {
             this.$router.push({
@@ -230,7 +231,7 @@ export default {
                 restaurantId,
                 tableId,
                 // 라우터 param으로 넘겨도 됨
-                lang: currentLang,
+                lang: this.selectedLang,
               }
             });
           }, 1000);
