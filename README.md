@@ -12,5 +12,5 @@
     - 기존 업체 기능의 경우 [1) 사장님이 직접 외국어를 번역하여, 2) 직접 대시보드 등으로 일일이 넣거나, 업체에 일괄 삽입을 부탁해야하는 번거로움]으로 인해 저조한 사용을 보임
 ![image](https://github.com/user-attachments/assets/be0f8e32-ae04-4349-b36f-86681bcc2cd6)
 
-### 프로젝트 결과보고서 및 각종 산출물
+### 프로젝트 결과보고서 및 각종 산출물 (시연영상, 기획서, ERD, API 명세서 등)
 https://nadosunbae.notion.site/_-_-1b3da7c537958071bafbd08b18412d6e?pvs=4
