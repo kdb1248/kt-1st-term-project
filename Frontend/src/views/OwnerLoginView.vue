@@ -1,5 +1,5 @@
 <template>
-    <div
+    <div 
       class="container d-flex flex-column justify-content-center align-items-center"
       style="height: 100vh"
     >
@@ -103,5 +103,6 @@
   
   <style scoped>
   /* 필요한 추가 스타일이 있으면 여기 작성 */
+  
   </style>
   
